@@ -1,33 +1,25 @@
 \documentclass[12pt]{article}
-\usepackage{soul}
+\usepackage[dvipsnames]{xcolor}
 \usepackage{tikz}
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{amssymb}
-\usepackage{lipsum}
 \usepackage{float}
 \usepackage{titlesec}
 
 \usepackage[strict]{changepage} 
 \usepackage{framed} 
 
-\usepackage{enumerate}
-\usepackage{subfigure}
 \usepackage{geometry}
-\usepackage{graphicx}
-\usepackage{booktabs}
-\usepackage{makecell}
-\usepackage{xeCJK}
+\usepackage{url}
 \usepackage{tcolorbox}
-\usepackage[dvipsnames]{xcolor}
 \setcounter{secnumdepth}{4}
 \geometry{a4paper,scale=0.8}
 \linespread{1}
 
-\usepackage{pdfpages}
 \renewcommand{\baselinestretch}{1.4}
 
-\definecolor{formalshade}{rgb}{0.95,0.95,1} % 文本框颜色
+\definecolor{formalshade}{rgb}{0.95,0.95,1} % Shaded theorem background
 
 \newenvironment{formal}{%
 \def\FrameCommand{%
@@ -54,7 +46,7 @@
     colframe=Blue,    
     fonttitle=\bfseries,       
        title=Theorem~\refstepcounter{mytheoremcounter}\themytheoremcounter,  
-    label=#1                 
+    #1
 }
 %definition
 \newtcolorbox{mydefinition}[1][]{
@@ -62,15 +54,15 @@
     colframe=SpringGreen!88!black,     
     fonttitle=\bfseries,       
        title=Definition~\refstepcounter{mydefinitioncounter}\themydefinitioncounter,  
-    label=#1                    
+    #1
 }
 
 \newtcolorbox{mylemma}[1][]{
     colback=blue!5!white,     
     colframe=Blue,  
     fonttitle=\bfseries,       
-       title=Lemma~\refstepcounter{mylemmacounter}\themytheoremcounter, 
-    label=#1                   
+       title=Lemma~\refstepcounter{mylemmacounter}\themylemmacounter,
+    #1
 }
 
 \titleformat{\section}
@@ -89,10 +81,10 @@
 \begin{large}
 \textbf{Approximation by Superpositions of a Sigmoidal Function}\\
 \end{large}
-Paper Handout by Zixin Yu
+Notes by Zixin Yu
 \end{center}
 
-In 1989, Cybenko published a paper titled Approximation by Superpositions of a Sigmoidal Function. In this paper, Cybenko demonstrated that a feedforward neural network with a single hidden layer can approximate any continuous function defined on a compact set. This result later became known as the \textbf{Universal Approximation Theorem}. In this article, I will attempt to outline the entire proof process, clarify some of the points of confusion I encountered during my reading, and provide more in-depth mathematical explanations of the details that Cybenko skipped over. The following content will involve numerous concepts from measure theory and functional analysis, but they are not too difficult. I believe that even without a solid foundation, one can still grasp the essence of the proof.
+In 1989, Cybenko published \emph{Approximation by Superpositions of a Sigmoidal Function}~\cite{1}. He proved that a feedforward neural network with a single hidden layer and a continuous sigmoidal activation function can approximate any continuous function on the unit cube to arbitrary accuracy. This is a version of the \textbf{universal approximation theorem}. In these notes, I outline the proof, clarify points that I found confusing, and expand on details that Cybenko left implicit. The argument uses concepts from measure theory and functional analysis; I introduce the main results as they arise to make the proof easier to follow.
 
 \section{Problem Description}
 
@@ -136,26 +128,25 @@ A feedforward neural network with a single hidden layer typically takes the foll
     \sum_{j=1}^N \alpha_j \sigma (w_j^T x +\theta_j).
 \end{align*}
 
-In the structure of the neural network, $w_j$ represents the weight applied to the input $x$, $\alpha_i$ represents the weight of the output from the hidden layer, and $\theta_i$ is the bias of neuron $i$. We refer to $w_j^T x + \theta_j$ as the affine transformation with respect to the neural network input.\\
+Here, $x \in \mathbb{R}^n$ is the input, $w_j \in \mathbb{R}^n$ is the input weight vector for hidden neuron $j$, $\alpha_j \in \mathbb{R}$ is its output weight, and $\theta_j \in \mathbb{R}$ is its bias. The function $\sigma$ is the activation function, and $x \mapsto w_j^T x + \theta_j$ is an affine function of the input.
 
-Let $I_n$ be the $n$-dimensional unit cube $[0,1]^n$, and denote the space of continuous functions on $I_n$ as $C(I_n)$. The space of finite regular Borel measures on $I_n$ is denoted by $M(I_n)$. We use $\left\lVert f\right\rVert$ to represent the supremum norm of $f \in C(I_n)$, where $\left\lVert \cdot\right\rVert$ is often used to denote the maximum value of a function over its domain. The primary goal of the following proof is to determine the conditions under which functions of the form
+Let $I_n=[0,1]^n$ be the $n$-dimensional unit cube, and let $C(I_n)$ denote the space of real-valued continuous functions on $I_n$. Let $M(I_n)$ denote the space of finite signed regular Borel measures on $I_n$. For $f \in C(I_n)$, the supremum norm is $\lVert f\rVert_\infty=\max_{x\in I_n}|f(x)|$. Our goal is to determine when finite sums of the following form are dense in $C(I_n)$ with respect to the supremum norm:
 \begin{align*}
-    G(x)= \sum_{j=1}^N \alpha_j \sigma (w_j^T x +\theta_j)
+    G(x)= \sum_{j=1}^N \alpha_j \sigma (w_j^T x +\theta_j).
 \end{align*}
-are dense in $C(I_n)$ with respect to the supremum norm.
 
 \begin{mydefinition}
-If for all $y \in \mathbb{R}^n$ and $\theta \in \mathbb{R}$, the integral with respect to the measure $\mu \in M(I_n)$
+A function $\sigma:\mathbb{R}\to\mathbb{R}$ is \emph{discriminatory} if, for every $\mu \in M(I_n)$, the condition
     \begin{align*}
-        \int_{I_n} \sigma(w^Tx+\theta)\mathrm{d}\mu(x)=0，
+        \int_{I_n} \sigma(w^Tx+\theta)\mathrm{d}\mu(x)=0
     \end{align*}
-    implies that $\mu = 0$, then $\sigma$ is said to be discriminatory.
+    for all $w \in \mathbb{R}^n$ and $\theta \in \mathbb{R}$ implies that $\mu = 0$.
 \end{mydefinition}
-When I read this definition, I encountered some confusion. It can actually be restated in another way: for a non-zero measure $\mu$, there exist $w_j$ and $\theta_j$ such that
+I initially found this definition confusing. Equivalently, for every nonzero measure $\mu \in M(I_n)$, there exist $w \in \mathbb{R}^n$ and $\theta \in \mathbb{R}$ such that
 \begin{align*}
-\int_{I_n}\sigma(w^Tx+\theta)\mathrm{d}\mu(x)\neq 0
+\int_{I_n}\sigma(w^Tx+\theta)\mathrm{d}\mu(x)\neq 0.
 \end{align*}
-If the above expression equals zero, then $\mu$ must be the zero measure. More intuitively, a discriminatory $\sigma$ is non-destructive in terms of volume, ensuring that no information is lost when processing the shifted and weighted $x$. Therefore, it will not reduce the affine space $w_j^T x + \theta_j$ to a zero-measure set. Now, let’s look at the definition of a sigmoidal function.
+The quantifier ``for all $w$ and $\theta$'' is essential: a single vanishing integral does not imply that $\mu=0$. Intuitively, the family of functions $x\mapsto\sigma(w^Tx+\theta)$ can detect every nonzero finite signed regular Borel measure through integration. Now consider the definition of a sigmoidal function.
 
 \begin{mydefinition}
     A sigmoidal activation function satisfies
@@ -165,58 +156,52 @@ If the above expression equals zero, then $\mu$ must be the zero measure. More i
     0, &  t \to -\infty.
     \end{cases}$$
 \end{mydefinition}
-There are many functions that satisfy Definition 2 (such as logistic, softmax, etc.), but here we will only discuss the general case. The second part will present some key results, and the third part will apply these results to the structure of neural networks. The original author also discussed other types of activation functions, but due to time constraints, I’ll leave that for later when I have the chance to fill in the gaps.
+The logistic function $\sigma(t)=1/(1+e^{-t})$ satisfies Definition 2. We will work with the general class of sigmoidal functions rather than a particular example. Section 2 presents the main results, and Section 3 applies them to neural networks. Cybenko also discusses other activation functions, which are beyond the scope of these notes.
 
 \section{Main Results}
 
 \begin{mytheorem}
-    Let $\sigma$ be any continuous discriminatory function. Then, functions of the form
+    Let $\sigma$ be any continuous discriminatory function. Then finite sums of the form
     \begin{align}
         G(x)=\sum_{j=1}^N \alpha_j \sigma (w_j^T x +\theta_j)
     \end{align}
-    finite sums of such functions are dense in $C(I_n)$. In other words, given any $f \in C(I_n)$ and $\epsilon > 0$, there exists a function $G(x)$ of the above form such that\begin{align*}
-        |G(x)-f(x)|<\epsilon, \quad x\in I_n.    \end{align*}
+    are dense in $C(I_n)$. In other words, given any $f \in C(I_n)$ and $\varepsilon > 0$, there exists a function $G$ of the above form such that
+    \begin{align*}
+        |G(x)-f(x)|<\varepsilon, \quad x\in I_n.
+    \end{align*}
 \end{mytheorem}
 
 \begin{proof}
-    Let $S \subseteq C(I_n)$ be the set of functions formed by $G(x)$ as defined in equation (1). Clearly, $S$ is a linear subspace of $C(I_n)$. To prove that $S$ is dense in $C(I_n)$, we need to show that the closure of $S$ is the entirety of $C(I_n)$. We use $\overline{S}$ to denote the closure of $S$. If we assume $\overline{S} \neq C(I_n)$, then $\overline{S}$ is a proper closed subspace of $C(I_n)$.
+    Let $S \subseteq C(I_n)$ be the set of all finite sums of the form (1). Then $S$ is a linear subspace of $C(I_n)$. To prove density, we must show that its closure $\overline{S}$ is all of $C(I_n)$. Suppose, for a contradiction, that $\overline{S} \neq C(I_n)$. Then $\overline{S}$ is a proper closed subspace of $C(I_n)$.
 \begin{formal}
-\textbf{Hahn-Banach Theorem}\\
-Let $S \subseteq C(I_n)$ be the set of functions formed by $G(x)$ as defined in equation (1). Clearly, $S$ is a linear subspace of $C(I_n)$. To prove that $S$ is dense in $C(I_n)$, we need to show that the closure of $S$ is the entirety of $C(I_n)$. We use $\overline{S}$ to denote the closure of $S$. If we assume $\overline{S} \neq C(I_n)$, then $\overline{S}$ is a proper closed subspace of $C(I_n)$.
+\textbf{A Consequence of the Hahn--Banach Theorem}\\
+Let $X$ be a real normed vector space, and let $Y$ be a proper closed linear subspace of $X$. There exists a nonzero bounded linear functional $L:X\to\mathbb{R}$ such that $L(y)=0$ for every $y\in Y$.
 \end{formal}
 
-The Hahn-Banach theorem provides us with a method to extend a bounded linear functional defined on $S$ to a bounded linear functional defined on the entire $C(I_n)$. According to the Hahn-Banach theorem, there exists a bounded linear functional on $C(I_n)$, denoted as $L$, such that
+Applying this consequence of the Hahn--Banach theorem with $X=C(I_n)$ and $Y=\overline{S}$ gives a bounded linear functional $L$ on $C(I_n)$ such that
 \begin{align*}
-    L(S)=L(\overline{S})=0,\quad L\neq 0
+    L(h)=0\quad\text{for every }h\in\overline{S},\qquad L\neq 0.
 \end{align*}
 
 \begin{formal}
 \textbf{Riesz Representation Theorem}\\
-Let $X$ be a locally compact Hausdorff space, and let $C_c(X)$ be the set of continuous functions with compact support defined on $X$. For each positive linear functional $\Lambda$ on $C_c(X)$, there exists a unique positive and regular Borel measure $\mu$ such that for all $f \in C_c(X)$, the following holds:
-$$\Lambda(f) = \int_X f d\mu.$$
-The measure $\mu$ is regular, meaning it satisfies the following properties:
-\begin{itemize}
-    \item For any open set \( U \subset X \),
-    $
-    \mu(U) = \sup \{ I(f) : f \in C_c(X), f \in [0,1], \text{supp } f \subset U \}.
-    $
-    \item For any compact set \( K \subset X \),
-    $
-    \mu(K) = \inf \{ I(f) : f \in C_c(X), f \geq \chi_K \}.
-    $
-\end{itemize}
+Let $K$ be a compact Hausdorff space. Every bounded linear functional $L$ on the real-valued continuous functions $C(K)$ has a unique representation
+\[
+L(h)=\int_K h(x)\,\mathrm{d}\mu(x),\qquad h\in C(K),
+\]
+where $\mu$ is a finite signed regular Borel measure on $K$.
 \end{formal}
-The measure $\mu$ is regular, meaning it satisfies the following properties:
+The Riesz representation theorem gives a measure $\mu\in M(I_n)$ with
 \begin{align*}
-    L(h)=\int_{I_n} h(x)\mathrm{d}\mu(x).
+    L(h)=\int_{I_n} h(x)\mathrm{d}\mu(x),\qquad h\in C(I_n).
 \end{align*}
-For any $w$ and $\theta$, functions of the form $\sigma(w^T x + \theta)$ are all in $S$, and since $L$ is zero on $S$, we have the following result:
+For every $w\in\mathbb{R}^n$ and $\theta\in\mathbb{R}$, the function $x\mapsto\sigma(w^T x + \theta)$ belongs to $S$. Since $L$ vanishes on $S$,
 \begin{align*}
     \int_{I_n} \sigma(w^Tx+\theta)\mathrm{d}\mu(x)=0.
 \end{align*}
-Since $\sigma$ is a discriminatory function, we must have $\mu = 0$. This contradicts the conclusion that $L \neq 0$, because:
+Since $\sigma$ is discriminatory, $\mu = 0$. This contradicts $L \neq 0$, because
 \begin{align*}
-    \mu=0 \implies \int_{I_n} h(x)\mathrm{d}\mu(x)=0,\quad h\in C(I_n)
+    \mu=0 \implies L(h)=\int_{I_n} h(x)\mathrm{d}\mu(x)=0,\quad h\in C(I_n).
 \end{align*}
 Therefore, $S$ is dense in $C(I_n)$. 
 \end{proof}
@@ -224,10 +209,15 @@ Therefore, $S$ is dense in $C(I_n)$.
 \begin{mylemma}
     Any continuous sigmoidal function is discriminatory.
 \end{mylemma}
-Recalling the definition of a discriminatory function, we need to examine the case where $\int_{I_n} \sigma(w^T x + \theta) \, \mathrm{d}\mu(x) = 0$. This is an integral over a measure space, which can be approached by constructing a sequence of non-negative simple functions that monotonically increase and approximate the original function, thereby simplifying the expression.
+To prove this lemma, we assume that a measure annihilates every function $x\mapsto\sigma(w^Tx+\theta)$ and show that the measure is zero. The key is to rescale the inputs to $\sigma$ and use dominated convergence to obtain information about the measures of half-spaces.
 
 \begin{proof}
-    Note that for any $x$, $w$, $\theta$, and $\varphi$, we have the following:
+    Suppose $\mu\in M(I_n)$ satisfies
+\[
+\int_{I_n}\sigma(w^Tx+\theta)\,\mathrm{d}\mu(x)=0
+\quad\text{for every }w\in\mathbb{R}^n,\ \theta\in\mathbb{R}.
+\]
+Fix $w\in\mathbb{R}^n$ and $\theta,\varphi\in\mathbb{R}$. By the sigmoidal limits,
 \begin{align*}
     \sigma(\lambda (w^T x + \theta) + \varphi) \rightarrow 
 \begin{cases}
@@ -236,130 +226,126 @@ Recalling the definition of a discriminatory function, we need to examine the ca
 \sigma(\varphi), & \quad w^T x + \theta = 0 \quad \text{for all} \quad \lambda.
 \end{cases}
 \end{align*}
-Therefore, as $\lambda \to +\infty$, the function sequence $\sigma(\lambda (w^T x + \theta) + \varphi)$ is bounded and converges pointwise to $\gamma(x)$:
+Thus, as $\lambda \to +\infty$, the functions $\sigma_\lambda(x)=\sigma(\lambda (w^T x + \theta) + \varphi)$ converge pointwise to
 \begin{align*}
-    f(x) = 
+    \gamma(x) =
 \begin{cases}
 1, & \quad w^T x + \theta > 0, \\
 0, & \quad w^T x + \theta < 0, \\
 \sigma(\varphi), & \quad w^T x + \theta = 0.
 \end{cases}
 \end{align*}
-Define the hyperplane $\Pi_{w,\theta} = \{x \in \mathbb{R}^d : w^T x + \theta = 0\}$, and the open half-space $H_{w,\theta} = \{x \in \mathbb{R}^d : w^T x + \theta > 0\}$.
+Define the level set $\Pi_{w,\theta} = \{x \in I_n : w^T x + \theta = 0\}$ and the set $H_{w,\theta} = \{x \in I_n : w^T x + \theta > 0\}$. When $w\neq0$, these are the intersections of $I_n$ with a hyperplane and an open half-space, respectively.
 
-Notice that for any x, we have $|\sigma_\lambda(x)| \leq \max(1, \sigma(\varphi))$. Therefore, according to the Lebesgue Dominated Convergence Theorem, we can conclude that:
+Because $\sigma$ is continuous and has finite limits at $\pm\infty$, it is bounded on $\mathbb{R}$. Let $M=\sup_{t\in\mathbb{R}}|\sigma(t)|<\infty$. Then $|\sigma_\lambda(x)|\leq M$, and this constant is integrable with respect to the finite total variation measure $|\mu|$. Moreover, the hypothesis gives $\int_{I_n}\sigma_\lambda\,\mathrm{d}\mu=0$ for every $\lambda>0$, since the rescaled weight and bias are $\lambda w$ and $\lambda\theta+\varphi$. Dominated convergence therefore gives
 \begin{align*}
-    \int_{I_n} \sigma(x)\mathrm{d}\mu(x)&=\lim_{\lambda\to \infty} \int_{I_n} \sigma_\lambda(x)\mathrm{d}\mu(x)\\
+    0&=\lim_{\lambda\to \infty} \int_{I_n} \sigma_\lambda(x)\mathrm{d}\mu(x)\\
     &= \int_{I_n} \lim_{\lambda\to \infty} \sigma_\lambda(x)\mathrm{d}\mu(x)\\
     &=\int_{I_n} \gamma(x) \mathrm{d}\mu(x)\\
     &=\sigma(\varphi)\mu(\Pi_{w,\theta})+\mu(H_{w,\theta}).
 \end{align*}
-Let the measure of all half-spaces be zero, i.e., $\mu(\Pi_{w,\theta}) = 0$ and $\mu(H_{w,\theta}) = 0$, thus
-$$
-\int_{I_n} \sigma(w^T x + \theta) \, \mathrm{d}\mu(x) = 0.
-$$
-Next, we will prove that in this case, $\mu$ must be the zero measure.
+This identity holds for every $\varphi$. Letting $\varphi\to-\infty$ yields $\mu(H_{w,\theta})=0$, and then letting $\varphi\to+\infty$ yields $\mu(\Pi_{w,\theta})=0$. We now show that these identities force $\mu$ to be the zero measure.
 
-Let $w$ be fixed. For a bounded measurable function $h$, define a linear functional $F: L^{\infty} \to \mathbb{R}$ as follows:
+Fix $w$. For a bounded Borel measurable function $h:\mathbb{R}\to\mathbb{R}$, define the linear functional
 \begin{align*}
     F(h) = \int_{I_n} h(w^T x) \, \mathrm{d}\mu(x).
 \end{align*}
 Since
 \begin{align*}
 \left|F(h)\right| &= \left|\int_{I_n} h(w^T x) \, \mathrm{d}\mu(x)\right| \\
-&\leq {\left\lVert h \right\rVert}_{\infty} \left|\int_{I_n} \mathrm{d}\mu(x)\right| \\
-&= {\left\lVert h \right\rVert}_{\infty} \cdot \mu(K),
+&\leq \int_{I_n}|h(w^Tx)|\,\mathrm{d}|\mu|(x) \\
+&\leq \lVert h\rVert_\infty\,|\mu|(I_n),
 \end{align*}
-and $\mu(I_n)$ is a finite measure, it follows that $F$ is a bounded (continuous) functional.
+the functional $F$ is bounded in the supremum norm. Here $\lVert h\rVert_\infty=\sup_{t\in\mathbb{R}}|h(t)|$, and $|\mu|(I_n)$ is finite because $\mu$ is a finite signed measure.
 
-Define $h$ as the indicator function on $[\theta, +\infty]$, i.e.,
+Let $h$ be the indicator function of $[\theta,+\infty)$, that is,
 \begin{align*}
-    h(x) = \begin{cases}
-        1, & x \geq \theta, \\
-        0, & x < \theta.
+    h(t) = \begin{cases}
+        1, & t \geq \theta, \\
+        0, & t < \theta.
     \end{cases}
 \end{align*}
-Thus, based on the assumption that the measure of any half-space is zero, we have
+Using the identities for the measures of the level sets and half-spaces, we obtain
 \begin{align*}
     F(h) &= \int_{I_n} h(w^T x) \, \mathrm{d}\mu(x) \\
-    &= \mu(\Pi_{y, -\theta}) + \mu(H_{y, -\theta}) \\
+    &= \mu(\Pi_{w, -\theta}) + \mu(H_{w, -\theta}) \\
     &= 0.
 \end{align*}
-Similarly, if $h$ is the indicator function on $(\theta, +\infty)$, then $F(h) = \mu(H_{y, -\theta}) = 0$. If we denote by $h_E$ the indicator function on the interval $E$, then we can write
-$
-    h_{[\theta_1,\theta_2]}=h_{[\theta_1,+\infty)}-h_{(\theta_2,+\infty)}$,
-    $h_{(\theta_1,\theta_2)}=h_{(\theta_1,+\infty)}-h_{[\theta_2,+\infty)}
-$.
-\\
+Similarly, if $h$ is the indicator function of $(\theta,+\infty)$, then $F(h)=\mu(H_{w,-\theta})=0$. Write $h_E$ for the indicator function of an interval $E$. For $a<b$,
+\begin{align*}
+    h_{[a,b]}&=h_{[a,+\infty)}-h_{(b,+\infty)},\\
+    h_{(a,b)}&=h_{(a,+\infty)}-h_{[b,+\infty)}.
+\end{align*}
 
-Since $F$ is a linear functional, based on the above equation, we can conclude that $F(h_{[a,b]}) = F(h_{(a,b)})$ holds for any interval $[a,b]$ and $(a,b)$. If the step function $f = \sum_{n=1}^N a_n h_{E_n}$, then
+By linearity, $F(h_{[a,b]})=F(h_{(a,b)})=0$. The same argument applies to half-open intervals and singletons. Thus, for any finite interval step function $r=\sum_{j=1}^N a_j h_{E_j}$,
 $$
-F(f) = \sum_{n=1}^N a_n F(h_{E_n}) = 0.
+F(r)=\sum_{j=1}^N a_jF(h_{E_j})=0.
 $$
-Step functions are dense in $L^{\infty}(\mathbb{R})$, so for any $f \in C(I_n)$, there exists a sequence of step functions $r_n$ such that $r_n \to f$. Based on the continuity of $F$, we can deduce that:
+The set $J_w=\{w^Tx:x\in I_n\}$ is a compact interval, possibly a single point. Every continuous function $h$ on $J_w$ can be approximated uniformly there by interval step functions $r_k$. Extending $h$ and $r_k$ by zero outside $J_w$ allows us to apply $F$, and the bound
 \begin{align*}
-    F(f)=F(\lim_{n\to\infty}r_n)=\lim_{n\to\infty} F(r_n)=0.
+    |F(h)-F(r_k)|\leq |\mu|(I_n)\sup_{t\in J_w}|h(t)-r_k(t)|\longrightarrow0
 \end{align*}
-Thus, $F(\cdot) = 0$. In the above discussion, we assumed a constant $w$. Now consider the Fourier transform $\hat{u}(w)$ for any $w \in \mathbb{R}^n$:
+shows that $F(h)=0$. In particular, this applies to the restrictions of sine and cosine to $J_w$. Since $w$ was arbitrary, the Fourier transform of $\mu$, extended by zero outside $I_n$, satisfies
 \begin{align*}
-    \hat{u}(w)&=\int_{I_n} e^{-iw^Tx}\mathrm{d}\mu(x)\\
-    &=\int_{I_n} \cos(w^Tx)\mathrm{d}\mu(x)-\int_{I_n} \sin(w^Tx)\mathrm{d}\mu(x)\\
-    &=F(\cos(\cdot))-F(\sin(\cdot))\\
-    &=0.
+    \hat{\mu}(w)&=\int_{I_n} e^{-iw^Tx}\mathrm{d}\mu(x)\\
+    &=\int_{I_n} \cos(w^Tx)\mathrm{d}\mu(x)-i\int_{I_n} \sin(w^Tx)\mathrm{d}\mu(x)\\
+    &=F(\cos)-iF(\sin)\\
+    &=0,\qquad w\in\mathbb{R}^n.
 \end{align*}
-If $\hat{\mu}(w) = 0$ holds for all $w \in \mathbb{R}$, then the measure $\mu$ must be the zero measure. Therefore, any continuous sigmoidal function is discriminatory.
+By uniqueness of the Fourier transform for finite measures, $\mu=0$. Therefore, every continuous sigmoidal function is discriminatory.
 \end{proof}
 
 \section{Application to Artificial Neural Networks}
 
 \begin{mytheorem}
-    Let $\sigma$ be any continuous sigmoidal function. Finite sums of the following form
+    Let $\sigma$ be any continuous sigmoidal function. Then finite sums of the form
 \begin{align*}
-G(x) = \sum_{j=1}^{N} \alpha_j \sigma(y_j^T x + \theta_j)
+G(x) = \sum_{j=1}^{N} \alpha_j \sigma(w_j^T x + \theta_j)
 \end{align*}
-are dense in $C(I_n)$. In other words, given any $f \in C(I_n)$ and $\varepsilon > 0$, there exists a $G(x)$ of the above form such that
+are dense in $C(I_n)$. In other words, given any $f \in C(I_n)$ and $\varepsilon > 0$, there exists a function $G$ of the above form such that
 \begin{align*}
 |G(x) - f(x)| < \varepsilon, \quad x \in I_n.
 \end{align*}
 \end{mytheorem}
 
 \begin{proof}
-    Combining Theorem 1 and Lemma 1, it can be noted that continuous sigmoidal functions satisfy the conditions of Theorem 2.
+    By Lemma 1, every continuous sigmoidal function is discriminatory, so Theorem 1 applies.
 \end{proof}
 
-We have proven that a feedforward neural network with a single hidden layer can approximate any continuous function defined on a compact set. Classification is one of the fundamental tasks in machine learning. Let $m$ be the Lebesgue measure on $I_n$. Suppose $( P_1, P_2, \dots, P_k )$ are disjoint measurable subsets of $I_n$. Define the decision function $f$ as
+We have proved that a feedforward neural network with a single hidden layer and a continuous sigmoidal activation function can approximate any continuous function on $I_n$ uniformly. We now turn to classification, a fundamental task in machine learning. Let $m$ denote Lebesgue measure on $I_n$, and let $P_1,\dots,P_k$ be a measurable partition of $I_n$: the sets are pairwise disjoint and their union is $I_n$. Define the decision function $f$ by
 \begin{align*}
     f(x) = j \quad \text{if and only if} \quad x \in P_j.
 \end{align*}
-If $f(x) = j$, then it must hold that $x \in P_j$, thus completing the classification. Theorem 3 will prove that such a decision function can be approximated by a feedforward neural network with a single hidden layer.
+The value $f(x)$ assigns a class label to $x$. This function need not be continuous, so Theorem 2 does not apply directly. Theorem 3 shows that a network can approximate $f$ outside a set of arbitrarily small measure.
 \begin{mytheorem}
-    Let $\sigma$ be a continuous sigmoidal function. Suppose $f$ is a decision function on any finite measurable subset of $I_n$. For any $\varepsilon > 0$, there exists a function of the form
+    Let $\sigma$ be a continuous sigmoidal function, and let $f$ be the decision function associated with a finite measurable partition of $I_n$. For any $\varepsilon > 0$, there exists a function of the form
 \begin{align*}
-G(x) = \sum_{j=1}^{N} \alpha_j \sigma(y_j^T x + \theta_j)
+G(x) = \sum_{j=1}^{N} \alpha_j \sigma(w_j^T x + \theta_j)
 \end{align*}
-and a set $D \subset I_n$ such that $m(D) \geq 1 - \varepsilon$, and for all $x \in D$, we have
+and a measurable set $D \subseteq I_n$ such that $m(D) \geq 1 - \varepsilon$ and
 \begin{align*}
-|G(x) - f(x)| < \varepsilon.
+|G(x) - f(x)| < \varepsilon,\qquad x\in D.
 \end{align*}
 \end{mytheorem}
 
 \begin{proof}
-    According to Lusin's Theorem:
+    We use the following form of Lusin's theorem.
     \begin{formal}
         \textbf{Lusin's Theorem}\\
-        Let $E$ be a measurable set in $\mathbb{R}^n$, and let $g$ be a measurable function on $E$ that is finite almost everywhere. For any \( \delta > 0 \), there exists a closed set $F$ such that $m(E - F) < \delta$ and $g(x)$ is continuous on $E \cap F$.
+        Let $E\subseteq\mathbb{R}^n$ be a measurable set of finite Lebesgue measure, and let $g:E\to\mathbb{R}$ be measurable. For every $\delta>0$, there exists a compact set $D\subseteq E$ such that $m(E\setminus D)<\delta$ and the restriction $g|_D$ is continuous.
     \end{formal}
-    There exists a continuous function $h$ and a set $D$ where $m(D) \geq 1 - \varepsilon$, such that for all $x \in D$, we have $h(x) = f(x)$. Since $h$ is continuous, by Theorem 2, we can find a function of the form $G$, such that for all $x \in I_n$, $|G(x) - h(x)| < \varepsilon$. Therefore, for all $x \in D$, we have:
+    Applying Lusin's theorem with $E=I_n$ and $\delta=\varepsilon$ gives a compact set $D\subseteq I_n$ with $m(D)\geq1-\varepsilon$ on which $f$ is continuous. By the Tietze extension theorem, the continuous function $f|_D$ extends to a function $h\in C(I_n)$. By Theorem 2, there is a network function $G$ such that $|G(x)-h(x)|<\varepsilon$ for every $x\in I_n$. Hence, for $x\in D$,
     $$
     |G(x) - f(x)| = |G(x) - h(x)| < \varepsilon.
     $$
     \end{proof}
 
 \section{Conclusion}
-After Cybenko’s paper, Hornik discovered in 1991 that the key to neural networks being universal approximators was not the activation function, but rather the structure of multiple neural layers and neurons. Since then, researchers have tested and verified the Universal Approximation Theorem with different activation functions and architectures. This theorem emphasizes that neural networks can be used to approximate any complex function to arbitrary precision, but it doesn’t tell us how to unlock their full potential. Only by advancing both theory and practice together can we get closer to achieving this “universality.”
+Hornik's 1991 paper~\cite{hornik1991} extended uniform approximation results to continuous, bounded, nonconstant activation functions, showing that the sigmoidal limits are not essential. A single hidden layer still suffices, provided that sufficiently many hidden units are available. Universal approximation is an existence result: under the stated assumptions, a network can approximate a target function to arbitrary accuracy. It does not, by itself, specify how many neurons are needed or how to train the network to find suitable weights. Understanding this ``universality'' therefore requires attention to both approximation theory and practical learning methods.
 
 \begin{thebibliography}{99}
-    \bibitem{1} Cybenko, G. (1989). Approximation by superpositions of a sigmoidal function. Mathematics of Control Signals and Systems, 2(4), 303–314. https://doi.org/10.1007/bf02551274
+    \bibitem{1} Cybenko, G. (1989). Approximation by superpositions of a sigmoidal function. \emph{Mathematics of Control, Signals, and Systems}, 2(4), 303--314. \url{https://doi.org/10.1007/BF02551274}
+    \bibitem{hornik1991} Hornik, K. (1991). Approximation capabilities of multilayer feedforward networks. \emph{Neural Networks}, 4(2), 251--257. \url{https://doi.org/10.1016/0893-6080(91)90009-T}
 \end{thebibliography}
 
 \end{document}
